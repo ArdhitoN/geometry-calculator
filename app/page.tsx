@@ -4,6 +4,10 @@ import { useState } from "react";
 import axios from "axios";
 import styles from "./styles/Home.module.css";
 
+function hasErrorMessage(error: unknown): error is { message: string } {
+  return typeof error === "object" && error !== null && "message" in error;
+}
+
 export default function Home() {
   const [squareSide, setSquareSide] = useState("");
   const [cubeSide, setCubeSide] = useState("");
@@ -11,7 +15,7 @@ export default function Home() {
   const [cubeSurfaceArea, setCubeSurfaceArea] = useState();
   const [loadingSquare, setLoadingSquare] = useState(false);
   const [loadingCube, setLoadingCube] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const calculateSquareArea = async () => {
     if (!squareSide) return;
@@ -32,9 +36,7 @@ export default function Home() {
     } catch (err) {
       // console.error("Square calculation error:", err);
       setError(
-        err.response?.data?.message ||
-          err.message ||
-          "Failed to calculate square area"
+        hasErrorMessage(err) ? err.message : "Failed to calculate square area"
       );
     } finally {
       setLoadingSquare(false);
@@ -60,9 +62,9 @@ export default function Home() {
     } catch (err) {
       // console.error("Cube calculation error:", err);
       setError(
-        err.response?.data?.message ||
-          err.message ||
-          "Failed to calculate cube surface area"
+        hasErrorMessage(err)
+          ? err.message
+          : "Failed to calculate cube surface area"
       );
     } finally {
       setLoadingCube(false);
